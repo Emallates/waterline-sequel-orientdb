@@ -141,9 +141,10 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   }
 
   // Error if groupBy is used and no calculations are given
-  if(!criteria.sum && !criteria.average && !criteria.min && !criteria.max) {
-    throw new Error('An aggregation was used but no calculations were given');
-  }
+  // Reason https://github.com/balderdashy/waterline-sequel/pull/100
+  // if(!criteria.sum && !criteria.average && !criteria.min && !criteria.max) {
+  //  throw new Error('An aggregation was used but no calculations were given');
+  // }
 
 
   var query = 'SELECT ';
