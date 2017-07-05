@@ -34,10 +34,35 @@ utils.object.hasOwnProperty = function(obj, prop) {
  *
  * Wraps a name in quotes to allow reserved
  * words as table or column names such as user.
+ *
+ *
+ * NOTE: do not use this method to escape strings in a general-purpose way.
+ * This is intended only to escape schema object (e.g. table and column) names.
+ * Check out utils.escapeString() for other purposes.  No harm in taking a
+ * peek at https://dev.mysql.com/doc/refman/5.7/en/identifiers.html .
  */
 
-utils.escapeName = function escapeName(name, escapeCharacter) {
-  return '' + escapeCharacter + name + escapeCharacter;
+utils.escapeName = function escapeName(name, escapeCharacter, schemaName) {
+  var regex = new RegExp(escapeCharacter, 'g');
+  var replacementString = '' + escapeCharacter + escapeCharacter;
+  var replacementDot = '\.';
+  if (schemaName && schemaName[name]) {
+    return utils.escapeName(schemaName[name], escapeCharacter) + '.' +
+    utils.escapeName(name, escapeCharacter);
+  }
+  return '' + escapeCharacter + name.replace(regex, replacementString).replace(/\./g, replacementDot) + escapeCharacter;
+};
+
+/**
+ * Populate alias. Create the alias for an association
+ *
+ * @param {string} alias
+ *
+ * @returns {string}
+ */
+
+utils.populationAlias = function (alias) {
+  return '__' + alias;
 };
 
 /**
@@ -62,7 +87,7 @@ utils.mapAttributes = function(data, options) {
   // Determine if we should escape the inserted characters
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
-  Object.keys(data).forEach(function(key) {
+  _.each(_.keys(data), function(key) {
     var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
     keys.push(k);
 
@@ -108,7 +133,7 @@ utils.prepareValue = function(value) {
   }
 
   // Store Arrays as strings
-  if (Array.isArray(value)) {
+  if (_.isArray(value)) {
     value = JSON.stringify(value);
   }
 
@@ -124,10 +149,10 @@ utils.prepareValue = function(value) {
  * Escape Strings
  */
 
-utils.escapeString = function(value) {
+utils.escapeString = function(value, forLike) {
   if(!_.isString(value)) return value;
 
-  value = value.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+  value = value.replace(/[_%\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
     switch(s) {
       case "\0": return "\\0";
       case "\n": return "\\n";
@@ -135,6 +160,8 @@ utils.escapeString = function(value) {
       case "\b": return "\\b";
       case "\t": return "\\t";
       case "\x1a": return "\\Z";
+      case "%": return forLike ? "\\%" : "%";
+      case "_": return forLike ? "\\_" : "_";
       default: return "\\"+s;
     }
   });
