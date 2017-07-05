@@ -1,7 +1,7 @@
 {
   "name": "waterline-sequel-orientdb",
   "description": "A helper library for generating OrientDB SQL queries from the Waterline Query Language.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Dário Marcelino <dario@appscot.com>",
   "url": "https://github.com/appscot/waterline-sequel-orientdb",
   "contributors": [
