@@ -136,7 +136,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   var self = this;
 
-  if(!criteria.groupBy && !criteria.sum && !criteria.average && !criteria.min && !criteria.max) {
+  if(!criteria.sum && !criteria.average && !criteria.min && !criteria.max) {
     return false;
   }
 
